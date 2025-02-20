@@ -1,19 +1,196 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { CheckIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  CheckIcon,
+  SparklesIcon,
+  RocketLaunchIcon,
+  ChartBarIcon,
+  CurrencyDollarIcon,
+  ClockIcon,
+  UserGroupIcon,
+  StarIcon,
+  BoltIcon,
+  FireIcon,
+  HeartIcon,
+  GlobeAltIcon,
+} from '@heroicons/react/24/outline';
 
-const features = [
-  'No upfront costs or commitments',
-  'Pay only 10% of current employee costs',
-  'Only pay if you are satisfied with results',
-  '24/7 AI operation without breaks',
-  'Instant scalability',
-  'Consistent performance',
-  'No training or onboarding needed',
-  'Seamless integration with existing systems',
+interface PricingTier {
+  name: string;
+  description: string;
+  price: number;
+  features: string[];
+  savings: number;
+  roi: number;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  popularFeatures: string[];
+}
+
+const pricingTiers: PricingTier[] = [
+  {
+    name: "Starter Liberation",
+    description: "Perfect for small teams ready to embrace the AI revolution",
+    price: 10,
+    features: [
+      "Up to 5 AI replacements",
+      "Basic automation workflows",
+      "24/7 AI operation",
+      "Email support",
+      "90% cost reduction guarantee"
+    ],
+    savings: 450000,
+    roi: 4500,
+    icon: RocketLaunchIcon,
+    popularFeatures: ["Cost savings", "Basic automation"]
+  },
+  {
+    name: "Department Domination",
+    description: "Ideal for entire departments ready for full automation",
+    price: 20,
+    features: [
+      "Up to 25 AI replacements",
+      "Advanced workflow automation",
+      "Priority processing",
+      "24/7 premium support",
+      "95% cost reduction guarantee",
+      "Custom AI training"
+    ],
+    savings: 2375000,
+    roi: 9875,
+    icon: SparklesIcon,
+    popularFeatures: ["Advanced automation", "Priority support"]
+  },
+  {
+    name: "Total Transformation",
+    description: "Complete company-wide AI revolution",
+    price: 30,
+    features: [
+      "Unlimited AI replacements",
+      "Enterprise workflow automation",
+      "Dedicated AI optimization team",
+      "99% cost reduction guarantee",
+      "Custom integration support",
+      "Advanced analytics dashboard",
+      "AI strategy consulting"
+    ],
+    savings: 9500000,
+    roi: 15833,
+    icon: BoltIcon,
+    popularFeatures: ["Unlimited scale", "Enterprise features"]
+  }
 ];
 
+const savingsCalculator = {
+  roles: [
+    { title: "Entry Level", baseCost: 45000 },
+    { title: "Mid Level", baseCost: 75000 },
+    { title: "Senior Level", baseCost: 120000 },
+    { title: "Management", baseCost: 150000 },
+    { title: "Executive", baseCost: 250000 }
+  ],
+  benefits: [
+    { name: "Healthcare", percentage: 20 },
+    { name: "Equipment", percentage: 5 },
+    { name: "Training", percentage: 10 },
+    { name: "Office Space", percentage: 15 },
+    { name: "Other Benefits", percentage: 10 }
+  ]
+};
+
 const PricingPage: React.FC = () => {
+  const [selectedTier, setSelectedTier] = useState<number>(1);
+  const [calculatorState, setCalculatorState] = useState({
+    roleType: 'Mid Level',
+    employeeCount: 10,
+    benefitsIncluded: true
+  });
+  const [showROIPopup, setShowROIPopup] = useState(false);
+  const [animateNumbers, setAnimateNumbers] = useState(false);
+
+  useEffect(() => {
+    // Start number animation when component mounts
+    setAnimateNumbers(true);
+  }, []);
+
+  const calculateTotalSavings = () => {
+    const role = savingsCalculator.roles.find(r => r.title === calculatorState.roleType);
+    if (!role) return 0;
+
+    let totalCost = role.baseCost * calculatorState.employeeCount;
+    
+    if (calculatorState.benefitsIncluded) {
+      const benefitsPercentage = savingsCalculator.benefits.reduce((acc, benefit) => acc + benefit.percentage, 0);
+      totalCost *= (1 + benefitsPercentage / 100);
+    }
+
+    return totalCost * 0.9; // 90% savings
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  const PricingMetrics = () => {
+    const metrics = [
+      { icon: ChartBarIcon, label: "Performance Metrics", value: "+500%" },
+      { icon: CurrencyDollarIcon, label: "Cost Savings", value: "90%" },
+      { icon: ClockIcon, label: "Time Saved", value: "1000hrs/mo" },
+      { icon: UserGroupIcon, label: "Teams Liberated", value: "100+" },
+      { icon: StarIcon, label: "Success Rate", value: "99.9%" },
+      { icon: FireIcon, label: "Efficiency Boost", value: "10x" },
+      { icon: HeartIcon, label: "AI Satisfaction", value: "100%" },
+      { icon: GlobeAltIcon, label: "Global Coverage", value: "24/7" },
+    ];
+
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-white rounded-xl shadow-lg">
+        {metrics.map((metric, index) => (
+          <div key={index} className="text-center p-4">
+            <metric.icon className="h-8 w-8 mx-auto text-primary-600" />
+            <p className="mt-2 font-semibold text-gray-900">{metric.value}</p>
+            <p className="text-sm text-gray-600">{metric.label}</p>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const ROICalculator = () => {
+    const animateNumbers = async (start: number, end: number, element: HTMLElement) => {
+      const duration = 1000;
+      const frames = 60;
+      const increment = (end - start) / frames;
+      
+      for(let i = 0; i <= frames; i++) {
+        const current = Math.round(start + (increment * i));
+        element.textContent = current.toLocaleString();
+        await new Promise(resolve => setTimeout(resolve, duration / frames));
+      }
+    };
+
+    return (
+      <div className="mt-8">
+        <button 
+          onClick={() => setShowROIPopup(true)}
+          className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700"
+        >
+          Calculate Your ROI
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -24,138 +201,226 @@ const PricingPage: React.FC = () => {
           className="mx-auto max-w-2xl text-center"
         >
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Simple, Risk-Free Pricing
+            Revolutionary Pricing for Revolutionary Change
+            <span className="block text-lg font-normal mt-2 text-primary-600">
+              Invest in the future, save on the past
+            </span>
           </h2>
-          <p className="mt-6 text-lg leading-8 text-gray-600">
-            Replace your employees with AI solutions and only pay 10% of your current costs. No upfront fees, no risk.
-          </p>
         </motion.div>
 
+        {/* Interactive Pricing Tiers */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mx-auto mt-16 max-w-7xl rounded-3xl ring-1 ring-gray-200 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-3"
         >
-          <div className="p-8 sm:p-10 lg:flex-auto">
-            <h3 className="text-2xl font-bold tracking-tight text-gray-900">
-              Pay Only For Success
-            </h3>
-            <p className="mt-6 text-base leading-7 text-gray-600">
-              Our revolutionary pricing model means you only pay when our AI solution successfully replaces your employee.
-              Save 90% on your current employee costs while getting better performance and reliability.
-            </p>
-            <div className="mt-10 flex items-center gap-x-4">
-              <h4 className="flex-none text-sm font-semibold leading-6 text-primary-600">
-                What's included
-              </h4>
-              <div className="h-px flex-auto bg-gray-100" />
-            </div>
-            <ul
-              role="list"
-              className="mt-8 grid grid-cols-1 gap-4 text-sm leading-6 text-gray-600 sm:grid-cols-2 sm:gap-6"
+          {pricingTiers.map((tier, index) => (
+            <motion.div
+              key={tier.name}
+              variants={itemVariants}
+              className={`relative rounded-2xl bg-white p-8 shadow-xl ring-1 ring-gray-200 transition-all duration-300 ${
+                selectedTier === index ? 'ring-2 ring-primary-500 scale-105' : ''
+              }`}
+              onClick={() => setSelectedTier(index)}
             >
-              {features.map((feature) => (
-                <li key={feature} className="flex gap-x-3">
-                  <CheckIcon className="h-6 w-5 flex-none text-primary-600" aria-hidden="true" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="-mt-2 p-2 lg:mt-0 lg:w-full lg:max-w-md lg:flex-shrink-0">
-            <div className="rounded-2xl bg-gray-50 py-10 text-center ring-1 ring-inset ring-gray-900/5 lg:flex lg:flex-col lg:justify-center lg:py-16">
-              <div className="mx-auto max-w-xs px-8">
-                <p className="text-base font-semibold text-gray-600">Pay only</p>
-                <p className="mt-6 flex items-baseline justify-center gap-x-2">
-                  <span className="text-5xl font-bold tracking-tight text-gray-900">10%</span>
-                  <span className="text-sm font-semibold leading-6 tracking-wide text-gray-600">
-                    of current costs
-                  </span>
-                </p>
-                <p className="mt-6 text-xs leading-5 text-gray-600">
-                  Only pay if you're satisfied with the AI replacement
-                </p>
-                <a
-                  href="/contact"
-                  className="mt-10 block w-full rounded-md bg-primary-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
-                >
-                  Get started today
-                </a>
+              <div className="flex items-center gap-4">
+                <tier.icon className="h-8 w-8 text-primary-600" />
+                <h3 className="text-lg font-semibold">{tier.name}</h3>
               </div>
-            </div>
-          </div>
+
+              <p className="mt-4 text-sm text-gray-600">{tier.description}</p>
+
+              <div className="mt-6">
+                <div className="flex items-baseline">
+                  <span className="text-4xl font-bold tracking-tight text-gray-900">
+                    {tier.price}%
+                  </span>
+                  <span className="text-sm text-gray-600 ml-1">of human cost</span>
+                </div>
+
+                <motion.div
+                  className="mt-6"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <ul className="space-y-3">
+                    {tier.features.map((feature) => (
+                      <li key={feature} className="flex items-start">
+                        <CheckIcon className="h-5 w-5 text-primary-600 mr-2 flex-shrink-0" />
+                        <span className="text-sm text-gray-600">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+
+                {/* ROI Metrics */}
+                <div className="mt-8 space-y-4">
+                  <div className="bg-primary-50 rounded-lg p-4">
+                    <div className="text-sm font-medium text-primary-900">Annual Savings</div>
+                    <motion.div
+                      className="text-2xl font-bold text-primary-600"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                      ${tier.savings.toLocaleString()}
+                    </motion.div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="text-sm font-medium text-green-900">ROI</div>
+                    <motion.div
+                      className="text-2xl font-bold text-green-600"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                    >
+                      {tier.roi}%
+                    </motion.div>
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="mt-8 block w-full rounded-md bg-primary-600 px-3.5 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-primary-500"
+                >
+                  Get Started
+                </motion.button>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
 
-        {/* Example savings section */}
+        {/* Interactive Calculator */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="mx-auto mt-32 max-w-7xl sm:mt-40"
+          className="mt-24 bg-gray-50 rounded-2xl p-8"
         >
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              See Your Potential Savings
-            </h2>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Here's how much you could save by replacing different roles with our AI solutions
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-gray-900">
+              Calculate Your Liberation Savings
+            </h3>
+            <p className="mt-2 text-gray-600">
+              See exactly how much you'll save by embracing the AI revolution
             </p>
           </div>
 
-          <dl className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-10 text-white sm:mt-20 sm:grid-cols-2 sm:gap-y-16 lg:mx-0 lg:max-w-none lg:grid-cols-4">
-            {[
-              { role: 'Customer Service Rep', currentCost: 45000, saving: 40500 },
-              { role: 'Administrative Assistant', currentCost: 52000, saving: 46800 },
-              { role: 'Sales Representative', currentCost: 65000, saving: 58500 },
-              { role: 'Data Entry Specialist', currentCost: 38000, saving: 34200 },
-            ].map((item) => (
-              <div
-                key={item.role}
-                className="flex flex-col rounded-xl bg-primary-600 p-8 hover:bg-primary-500 transition-colors"
-              >
-                <dt className="text-sm leading-6">{item.role}</dt>
-                <dd className="mt-2">
-                  <span className="text-2xl font-bold tracking-tight">
-                    ${item.currentCost.toLocaleString()}
-                  </span>
-                  <span className="text-sm"> / year</span>
-                </dd>
-                <dd className="mt-4 text-sm">
-                  Save ${item.saving.toLocaleString()} annually
-                </dd>
+          <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            {/* Calculator Controls */}
+            <div className="space-y-6">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Role Type</label>
+                <select
+                  value={calculatorState.roleType}
+                  onChange={(e) => setCalculatorState(prev => ({ ...prev, roleType: e.target.value }))}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                >
+                  {savingsCalculator.roles.map(role => (
+                    <option key={role.title} value={role.title}>{role.title}</option>
+                  ))}
+                </select>
               </div>
-            ))}
-          </dl>
-        </motion.div>
 
-        {/* Call to action */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mx-auto mt-32 max-w-7xl text-center"
-        >
-          <div className="relative isolate overflow-hidden bg-gray-900 px-6 py-24 shadow-2xl sm:rounded-3xl sm:px-24">
-            <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Ready to Reduce Your Costs by 90%?
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-300">
-              Start your risk-free journey today. No upfront costs, only pay when you're satisfied with the results.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="/contact"
-                className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                Get started now
-              </a>
-              <a href="/services" className="text-sm font-semibold leading-6 text-white">
-                Learn more <span aria-hidden="true">→</span>
-              </a>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Number of Employees</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={calculatorState.employeeCount}
+                  onChange={(e) => setCalculatorState(prev => ({ ...prev, employeeCount: parseInt(e.target.value) }))}
+                  className="mt-1 w-full"
+                />
+                <div className="text-sm text-gray-600 mt-1">
+                  {calculatorState.employeeCount} employees
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={calculatorState.benefitsIncluded}
+                  onChange={(e) => setCalculatorState(prev => ({ ...prev, benefitsIncluded: e.target.checked }))}
+                  className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <label className="ml-2 text-sm text-gray-700">
+                  Include benefits in calculation
+                </label>
+              </div>
+            </div>
+
+            {/* Results Display */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-xl p-6 shadow-lg">
+                <h4 className="text-lg font-semibold text-gray-900">Your Potential Savings</h4>
+                
+                <div className="mt-6 grid gap-4">
+                  <motion.div
+                    className="bg-green-50 rounded-lg p-4"
+                    initial={{ scale: 0.95 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="text-sm font-medium text-green-800">Annual Savings</div>
+                    <div className="text-3xl font-bold text-green-600">
+                      ${calculateTotalSavings().toLocaleString()}
+                    </div>
+                  </motion.div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <motion.div
+                      className="bg-blue-50 rounded-lg p-4"
+                      initial={{ scale: 0.95 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.3, delay: 0.1 }}
+                    >
+                      <div className="text-sm font-medium text-blue-800">Monthly Savings</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        ${(calculateTotalSavings() / 12).toLocaleString()}
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      className="bg-purple-50 rounded-lg p-4"
+                      initial={{ scale: 0.95 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                    >
+                      <div className="text-sm font-medium text-purple-800">5-Year Savings</div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        ${(calculateTotalSavings() * 5).toLocaleString()}
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>
+
+        {/* ROI Popup */}
+        <AnimatePresence>
+          {showROIPopup && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-0 flex items-center justify-center z-50"
+            >
+              <div className="bg-white rounded-xl p-8 shadow-2xl max-w-lg w-full mx-4">
+                <h4 className="text-xl font-bold text-gray-900">Detailed ROI Analysis</h4>
+                {/* Add detailed ROI content here */}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <PricingMetrics />
+        <ROICalculator />
       </div>
     </div>
   );
